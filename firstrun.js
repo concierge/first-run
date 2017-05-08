@@ -84,16 +84,16 @@ class FirstRun {
                 installPromises.push(this._installModule(def));
             }
             Promise.all(installPromises).then(() => {
-                platform.modulesLoader.loadAllModules();
-                const dir = this.__descriptor.folderPath;
-                platform.modulesLoader.unloadModule(this.__descriptor);
-                fs.remove(dir, () => {});
+                platform.modulesLoader.unloadModule(this);
             });
         });
     }
 
-    unload () {
-        // nothing to do
+    unload (platform) {
+        const dir = this.__descriptor.folderPath;
+        fs.remove(dir, () => {
+            process.nextTick(() => platform.modulesLoader.loadAllModules());
+        });
     }
 }
 
