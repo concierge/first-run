@@ -22,10 +22,10 @@ class FirstRun {
         }
     }
 
-    _getRemoteDefaults () {
+    _getRemoteDefaults (globalConfig) {
         return new Promise(resolve => {
             const potentialDefaultUrls = [
-                platform.config.getSystemConfig('defaults').url || null,
+                globalConfig.url || null,
                 this.config.url || null,
                 this._getJson(process.env.CONCIERGE_DEFAULTS_URL),
                 'https://raw.githubusercontent.com/wiki/concierge/Concierge/Defaults.md'
@@ -65,34 +65,29 @@ class FirstRun {
     }
 
     load (platform) {
-        process.nextTick(() => { // let startup complete
-            if (platform.modulesLoader.getLoadedModules().length > 1) {
-                LOG.error('Modules are already installed, will not continue.');
+        const globalConfig = platform.config.getSystemConfig('defaults');
+        this._getRemoteDefaults(globalConfig).then(remoteDefaults => {
+            const potentialDefaults = [
+                this._getJsonFile(global.rootPathJoin('defaults.json')),
+                globalConfig.list || null,
+                this.config.list || null,
+                this._getJson(process.env.CONCIERGE_DEFAULTS),
+                remoteDefaults
+            ];
+            const defaultModules = potentialDefaults.find(p => !!p);
+            if (!defaultModules) {
+                LOG.error('No defaults list is available to install.');
                 return;
             }
-            this._getRemoteDefaults().then(remoteDefaults => {
-                const potentialDefaults = [
-                    this._getJsonFile(global.rootPathJoin('defaults.json')),
-                    platform.config.getSystemConfig('defaults').list || null,
-                    this.config.list || null,
-                    this._getJson(process.env.CONCIERGE_DEFAULTS),
-                    remoteDefaults
-                ];
-                const defaultModules = potentialDefaults.find(p => !!p);
-                if (!defaultModules) {
-                    LOG.error('No defaults list is available to install.');
-                    return;
-                }
-                const installPromises = [];
-                for (let def of defaultModules) {
-                    installPromises.push(this._installModule(def));
-                }
-                Promise.all(installPromises).then(() => {
-                    platform.modulesLoader.loadAllModules();
-                    const dir = this.__descriptor.folderPath;
-                    platform.modulesLoader.unloadModule(this.__descriptor);
-                    fs.remove(dir, () => {});
-                });
+            const installPromises = [];
+            for (let def of defaultModules) {
+                installPromises.push(this._installModule(def));
+            }
+            Promise.all(installPromises).then(() => {
+                platform.modulesLoader.loadAllModules();
+                const dir = this.__descriptor.folderPath;
+                platform.modulesLoader.unloadModule(this.__descriptor);
+                fs.remove(dir, () => {});
             });
         });
     }
