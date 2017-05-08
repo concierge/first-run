@@ -96,6 +96,10 @@ class FirstRun {
             });
         });
     }
+
+    unload () {
+        // nothing to do
+    }
 }
 
 module.exports = new FirstRun();
