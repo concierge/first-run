@@ -92,7 +92,10 @@ class FirstRun {
     unload (platform) {
         const dir = this.__descriptor.folderPath;
         fs.remove(dir, () => {
-            process.nextTick(() => platform.modulesLoader.loadAllModules());
+            process.nextTick(() => {
+                platform.modulesLoader.loadAllModules();
+                platform.modulesLoader.startIntegration(platform.onMessage, 'test');
+            });
         });
     }
 }
