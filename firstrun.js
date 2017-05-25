@@ -62,6 +62,18 @@ class FirstRun {
         });
     }
 
+    _getInstalledVersion (path) {
+        const descriptor = this._getJsonFile(path.join(installPath, 'kassy.json')) ||
+            this._getJsonFile(path.join(installPath, 'hubot.json')) ||
+            this._getJsonFile(path.join(installPath, 'package.json'));
+        if (typeof(descriptor.version) === 'string') {
+            return descriptor.version;
+        }
+        // convert to semver
+        const spl = descriptor.version.toString().split('.');
+        return spl.concat(Array(3 - spl.length).fill('0')).join('.');
+    }
+
     _installModule (def) {
         return new Promise(resolve => {
             LOG.warn($$`Attempting to install module from "${def[0]}"`);
@@ -72,7 +84,7 @@ class FirstRun {
                     LOG.error($$`Failed to install module from "${def[0]}"`);
                 }
                 else {
-                    LOG.warn($$`"${def[1]}" (${this._getJsonFile(path.join(installPath, 'kassy.json')).version}) is now installed.`);
+                    LOG.warn($$`"${def[1]}" (${}) is now installed.`);
                 }
                 resolve(true);
             });
