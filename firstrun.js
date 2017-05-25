@@ -1,7 +1,22 @@
-const fs = require('fs-extra'),
-    request = require('request'),
+/**
+ * Provides methods for performing a first-run module install.
+ *
+ * When there are no modules installed, this code will download a known set of
+ * defaults using known install list locations.
+ *
+ * Written By:
+ *              Matthew Knox
+ *
+ * License:
+ *              MIT License. All code unless otherwise specified is
+ *              Copyright (c) Matthew Knox and Contributors 2017.
+ */
+
+const fs = require('fs'),
+    client = require('scoped-http-client'),
     path = require('path'),
-    git = require('concierge/git');
+    git = require('concierge/git'),
+    files = require('concierge/files');
 
 class FirstRun {
     _getJsonFile (file) {
@@ -31,7 +46,7 @@ class FirstRun {
                 'https://raw.githubusercontent.com/wiki/concierge/Concierge/Defaults.md'
             ];
             const url = potentialDefaultUrls.find(p => !!p);
-            request(url, (err, response, body) => {
+            client.create(url).get()((err, response, body) => {
                 if (err) {
                     resolve(null);
                 }
@@ -49,15 +64,15 @@ class FirstRun {
 
     _installModule (def) {
         return new Promise(resolve => {
-            console.warn($$`Attempting to install module from "${def[0]}"`);
+            LOG.warn($$`Attempting to install module from "${def[0]}"`);
             const installPath = path.join(global.__modulesPath, def[1]);
             git.clone(def[0], installPath, err => {
                 if (err) {
-                    console.critical(err);
-                    console.error($$`Failed to install module from "${def[0]}"`);
+                    LOG.critical(err);
+                    LOG.error($$`Failed to install module from "${def[0]}"`);
                 }
                 else {
-                    console.warn($$`"${def[1]}" (${this._getJsonFile(path.join(installPath, 'kassy.json')).version}) is now installed.`);
+                    LOG.warn($$`"${def[1]}" (${this._getJsonFile(path.join(installPath, 'kassy.json')).version}) is now installed.`);
                 }
                 resolve(true);
             });
@@ -91,7 +106,7 @@ class FirstRun {
 
     unload (platform) {
         const dir = this.__descriptor.folderPath;
-        fs.remove(dir, () => {
+        files.deleteDirectory(dir, () => {
             process.nextTick(() => {
                 platform.modulesLoader.loadAllModules();
                 platform.modulesLoader.startIntegration(platform.onMessage, 'test');

@@ -1,0 +1,5 @@
+{
+    "Attempting to install module from \"${0}\"": "Attempting to install module from \"${0}\"...",
+    "Failed to install module from \"${0}\"": "Failed to install module from \"${0}\"...",
+    "\"${0}\" (${1}) is now installed.":"\"${0}\" (${1}) is now installed."
+}
