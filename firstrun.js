@@ -118,8 +118,8 @@ class FirstRun {
 
     unload (platform) {
         const dir = this.__descriptor.folderPath;
-        files.deleteDirectory(dir, () => {
-            process.nextTick(() => {
+        platform.modulesLoader.once('unload', () => {
+            files.deleteDirectory(dir, () => {
                 platform.modulesLoader.loadAllModules();
                 platform.modulesLoader.startIntegration(platform.onMessage, 'test');
             });
