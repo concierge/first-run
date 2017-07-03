@@ -103,12 +103,10 @@ class FirstRun {
         platform.modulesLoader.unloadModule(this);
     }
 
-    unload (platform) {
+    async unload (platform) {
         const dir = this.__descriptor.folderPath;
-        platform.modulesLoader.once('unload', async() => {
-            await files.deleteDirectory(dir);
-            platform.modulesLoader.loadAllModules();
-        });
+        await util.promisify(c => platform.modulesLoader.once('unload', c))();
+        await files.deleteDirectory(dir);
     }
 }
 
