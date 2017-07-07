@@ -12,8 +12,7 @@
  *              Copyright (c) Matthew Knox and Contributors 2017.
  */
 
-const fs = require('fs'),
-    path = require('path'),
+const path = require('path'),
     util = require('util'),
     client = require('scoped-http-client'),
     git = require('concierge/git'),
@@ -46,8 +45,10 @@ class FirstRun {
             'https://raw.githubusercontent.com/wiki/concierge/Concierge/Defaults.md'
         ];
         const url = potentialDefaultUrls.find(p => !!p);
+        LOG.error(url);
         try {
             const response = await util.promisify(client.create(url).get)();
+            LOG.error(response);
             const tableArea = response.body.substring(response.body.indexOf('***') + 3, response.body.lastIndexOf('***')),
                 relevantArea = tableArea.substring(tableArea.indexOf('--|\n') + 4),
                 defaults = relevantArea.split(/\r?\n/)
@@ -56,6 +57,7 @@ class FirstRun {
             return defaults;
         }
         catch (e) {
+            LOG.critical(e);
             return null;
         }
     }
@@ -77,7 +79,8 @@ class FirstRun {
         const installPath = path.join(global.__modulesPath, def[1]);
         try {
             await git.clone(def[0], installPath);
-            LOG.warn($$`"${def[1]}" (${await this._getInstalledVersion(installPath)}) is now installed.`);
+            const installedVersion = await this._getInstalledVersion(installPath);
+            LOG.warn($$`"${def[1]}" (${installedVersion}) is now installed.`);
         }
         catch (err) {
             LOG.critical(err);
