@@ -45,15 +45,13 @@ class FirstRun {
             'https://raw.githubusercontent.com/wiki/concierge/Concierge/Defaults.md'
         ];
         const url = potentialDefaultUrls.find(p => !!p);
-        LOG.error(url);
         try {
-            const response = await util.promisify(client.create(url).get)();
-            LOG.error(response);
+            const response = await util.promisify(u => client.create(u).get())(url);
             const tableArea = response.body.substring(response.body.indexOf('***') + 3, response.body.lastIndexOf('***')),
                 relevantArea = tableArea.substring(tableArea.indexOf('--|\n') + 4),
                 defaults = relevantArea.split(/\r?\n/)
-                    .map(r => r.split('|').map(s => s.trim()).filter(s => !!s)
-                    .slice(0, 2).reverse()).filter(r => r.length === 2);
+                .map(r => r.split('|').map(s => s.trim()).filter(s => !!s)
+                .slice(0, 2).reverse()).filter(r => r.length === 2);
             return defaults;
         }
         catch (e) {
