@@ -47,7 +47,7 @@ class FirstRun {
         const url = potentialDefaultUrls.find(p => !!p);
         try {
             const response = await util.promisify((u, c) => client.create(u).get()(c))(url);
-            LOG.error(JSON.stringify(response, null, 4));
+            LOG.error(util.inspect(response));
             const tableArea = response.body.substring(response.body.indexOf('***') + 3, response.body.lastIndexOf('***')),
                 relevantArea = tableArea.substring(tableArea.indexOf('--|\n') + 4),
                 defaults = relevantArea.split(/\r?\n/)
