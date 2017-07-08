@@ -101,6 +101,7 @@ class FirstRun {
             return LOG.error('No defaults list is available to install.');
         }
         await Promise.all(defaultModules.map(def => this._installModule(def)));
+        platform.modulesLoader.emit('loadAll');
         platform.modulesLoader.unloadModule(this);
     }
 
@@ -108,7 +109,6 @@ class FirstRun {
         const dir = this.__descriptor.folderPath;
         await util.promisify(c => platform.modulesLoader.once('unload', c))();
         await files.deleteDirectory(dir);
-        platform.modulesLoader.emit('loadAll');
     }
 }
 
