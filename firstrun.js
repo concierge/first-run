@@ -108,6 +108,7 @@ class FirstRun {
         const dir = this.__descriptor.folderPath;
         await util.promisify(c => platform.modulesLoader.once('unload', c))();
         await files.deleteDirectory(dir);
+        platform.modulesLoader.emit('loadAll');
     }
 }
 
